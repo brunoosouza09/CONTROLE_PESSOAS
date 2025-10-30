@@ -24,6 +24,23 @@ CI com Docker:
   - Sobe com `docker compose`
   - Faz smoke test em `/api/health` e `/api/people`
 
+Publicação no GHCR:
+- A pipeline também publica a imagem em `ghcr.io/<owner>/controle-pessoas` com as tags `latest` e o `sha` do commit.
+- Para usar:
+```bash
+# login (opcional localmente; no GH Actions é automático)
+echo $GITHUB_TOKEN | docker login ghcr.io -u <seu-usuario> --password-stdin
+
+# pull da última imagem
+docker pull ghcr.io/<owner>/controle-pessoas:latest
+
+# executar apontando para MySQL externo
+docker run --rm -p 3000:3000 \
+  -e DB_HOST=host.docker.internal -e DB_PORT=3306 \
+  -e DB_USER=root -e DB_PASSWORD= -e DB_NAME=cadastro_pessoas \
+  ghcr.io/<owner>/controle-pessoas:latest
+```
+
 
 
 
