@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Cadastro de Pessoas</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <main class="container">
+        <h1>Cadastro de Pessoas</h1>
+
+        <form id="person-form" class="card">
+            <div class="grid">
+                <label>
+                    <span>Nome</span>
+                    <input type="text" id="nome" required>
+                </label>
+                <label>
+                    <span>Email</span>
+                    <input type="email" id="email" required>
+                </label>
+                <label>
+                    <span>Telefone</span>
+                    <input type="tel" id="telefone" placeholder="(99) 99999-9999">
+                </label>
+                <label>
+                    <span>CPF</span>
+                    <input type="text" id="cpf" placeholder="000.000.000-00">
+                </label>
+                <label>
+                    <span>Data de Nascimento</span>
+                    <input type="date" id="data_nascimento">
+                </label>
+                <label>
+                    <span>Endereço</span>
+                    <input type="text" id="endereco" placeholder="Rua, número, bairro">
+                </label>
+                <label>
+                    <span>Cidade</span>
+                    <input type="text" id="cidade">
+                </label>
+                <label>
+                    <span>Estado</span>
+                    <input type="text" id="estado" maxlength="2" placeholder="UF">
+                </label>
+                <label>
+                    <span>CEP</span>
+                    <input type="text" id="cep" placeholder="00000-000">
+                </label>
+                <label>
+                    <span>Gênero</span>
+                    <select id="genero">
+                        <option value="">Selecione</option>
+                        <option value="M">Masculino</option>
+                        <option value="F">Feminino</option>
+                        <option value="O">Outro</option>
+                    </select>
+                </label>
+            </div>
+            <div class="actions">
+                <button type="submit" id="submit-btn">Salvar</button>
+                <button type="button" id="reset-btn" class="secondary" hidden>Cancelar edição</button>
+            </div>
+            <input type="hidden" id="editing-id">
+        </form>
+
+        <section class="card">
+            <header class="list-header">
+                <h2>Lista</h2>
+                <button id="reload-btn" class="secondary">Recarregar</button>
+            </header>
+            <table id="people-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Email</th>
+                        <th>Telefone</th>
+                        <th>CPF</th>
+                        <th>Nascimento</th>
+                        <th>Cidade</th>
+                        <th>Estado</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </section>
+    </main>
+
+    <template id="row-template">
+        <tr>
+            <td class="col-id"></td>
+            <td class="col-nome"></td>
+            <td class="col-email"></td>
+            <td class="col-telefone"></td>
+            <td class="col-cpf"></td>
+            <td class="col-nascimento"></td>
+            <td class="col-cidade"></td>
+            <td class="col-estado"></td>
+            <td class="col-actions">
+                <button data-action="edit">Editar</button>
+                <button data-action="delete" class="danger">Excluir</button>
+            </td>
+        </tr>
+    </template>
+
+    <script src="/app.js"></script>
+    </body>
+    </html>
+
+
