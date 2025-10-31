@@ -6,6 +6,7 @@ require('dotenv').config();
 async function run() {
     const connection = await mysql.createConnection({
 		host: process.env.DB_HOST || 'localhost',
+		port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 3306,
 		user: process.env.DB_USER || 'root',
 		password: process.env.DB_PASSWORD || '',
 		multipleStatements: true,
@@ -41,10 +42,12 @@ async function run() {
                             'ER_DUP_FIELDNAME', // coluna já existe
                             'ER_TABLE_EXISTS_ERROR', // tabela já existe
                             'ER_DUP_KEYNAME', // índice já existe
-                            'ER_CANT_CREATE_TABLE' // alguns hosts retornam isso com exists
+                            'ER_CANT_CREATE_TABLE', // alguns hosts retornam isso com exists
+                            'ER_DB_CREATE_EXISTS', // banco já existe
+                            'ER_BAD_DB_ERROR' // banco não existe (será criado)
                         ];
                         if (ignorable.includes(err.code)) {
-                            console.log('Ignorando erro esperado:', err.code);
+                            console.log('Ignorando erro esperado:', err.code, err.message);
                             continue;
                         }
                         throw err;
