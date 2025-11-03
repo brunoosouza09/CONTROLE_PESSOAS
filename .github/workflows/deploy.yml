@@ -10,17 +10,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout código
+        uses: actions/checkout@v3
 
-    - name: Deploy via SSH
-      uses: appleboy/ssh-action@v0.1.10
-      with:
-        host: ${{ secrets.VPS_HOST }}
-        username: ${{ secrets.VPS_USER }}
-        key: ${{ secrets.SSH_KEY }}
-        script: |
-          cd /var/www/seu-projeto
-          git pull origin main
-          npm install
-          pm2 restart app
+      - name: Iniciar agente SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_KEY }}
+
+      - name: Deploy via SSH
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
+            echo "🔄 Iniciando deploy..."
+            cd /var/www/controle-pessoas || exit 1
+            git pull origin main
+            npm install
+            pm2 restart controle-pessoas
+            echo "✅ Deploy finalizado com sucesso!"
+          EOF
