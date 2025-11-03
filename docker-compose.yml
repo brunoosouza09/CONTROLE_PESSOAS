@@ -1,0 +1,21 @@
+version: '3'
+
+services:
+  app:
+    build: .
+    container_name: controle_pessoas_app
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+    command: node server.js
+
+  nginx:
+    image: nginx:latest
+    container_name: controle_pessoas_nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - app
