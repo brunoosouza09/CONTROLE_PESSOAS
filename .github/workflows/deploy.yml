@@ -8,6 +8,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: deploy-ssh
 
     steps:
       - name: Checkout código
@@ -16,11 +17,11 @@ jobs:
       - name: Iniciar agente SSH
         uses: webfactory/ssh-agent@v0.5.3
         with:
-          ssh-private-key: ${{ secrets.SSH_KEY }}
+          ssh-private-key: ${{ secrets.CLOUD_SSH_KEY }}
 
       - name: Deploy via SSH
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no ${{ secrets.CLOUD_USER }}@${{ secrets.CLOUD_HOST }} << 'EOF'
             echo "🔄 Iniciando deploy..."
             cd /var/www/controle-pessoas || exit 1
             git pull origin main
