@@ -1,0 +1,35 @@
+name: Deploy automático na VPS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: deploy-ssh
+
+    steps:
+    - name: Baixar o código
+      uses: actions/checkout@v3
+
+    - name: Enviar arquivos para a VPS
+      uses: appleboy/scp-action@v0.1.4
+      with:
+        host: ${{ secrets.CLOUD_HOST }}
+        username: ${{ secrets.CLOUD_USER }}
+        key: ${{ secrets.CLOUD_SSH_KEY }}
+        source: "."
+        target: "/root/app"
+
+    - name: Rodar Docker na VPS
+      uses: appleboy/ssh-action@v0.1.10
+      with:
+        host: ${{ secrets.CLOUD_HOST }}
+        username: ${{ secrets.CLOUD_USER }}
+        key: ${{ secrets.CLOUD_SSH_KEY }}
+        script: |
+          cd /root/app
+          docker-compose down
+          docker-compose up -d --build
