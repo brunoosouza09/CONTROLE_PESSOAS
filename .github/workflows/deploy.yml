@@ -1,0 +1,27 @@
+name: Deploy com Docker
+
+on:
+  workflow_dispatch:
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v3
+
+      - name: Adiciona chave SSH
+        run: |
+          echo "${{ secrets.SSH_KEY }}" > key.pem
+          chmod 600 key.pem
+
+      - name: Deploy via SSH com Docker
+        run: |
+          ssh -i key.pem -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+            cd /root/CONTROLE_PESSOAS
+            git pull origin main || exit 1
+            docker compose down
+            docker compose up -d --build
+            echo "Deploy com Docker finalizado com sucesso!"
+          EOF

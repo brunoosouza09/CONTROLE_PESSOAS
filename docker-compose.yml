@@ -1,0 +1,42 @@
+version: '3'
+
+services:
+  app:
+    build: .
+    container_name: controle_pessoas_app
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+    command: node server.js
+    environment:
+      - DB_HOST=controle_pessoas_mysql
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=
+      - DB_NAME=cadastro_pessoas
+
+  mysql:
+    image: mysql:8.0.8
+    container_name: controle_pessoas_mysql
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+      - MYSQL_DATABASE=cadastro_pessoas
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  nginx:
+    image: nginx:latest
+    container_name: controle_pessoas_nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - app
+    restart: always
