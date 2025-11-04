@@ -1,31 +1,27 @@
-name: Deploy to VPS
+name: Deploy com Docker
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
-  deploy:
+  main:
     runs-on: ubuntu-latest
-    environment: deploy-ssh
 
     steps:
-      - name: Checkout código
+      - name: Checkout do código
         uses: actions/checkout@v3
 
-      - name: Adicionar chave SSH manualmente
+      - name: Adiciona chave SSH
         run: |
-          echo "${{ secrets.CLOUD_SSH_KEY }}" > key.pem
+          echo "${{ secrets.SSH_KEY }}" > key.pem
           chmod 600 key.pem
 
-      - name: Deploy via SSH
+      - name: Deploy via SSH com Docker
         run: |
-          ssh -i key.pem -o StrictHostKeyChecking=no ${{ secrets.CLOUD_USER }}@${{ secrets.CLOUD_HOST }} << 'EOF'
-            echo "🔄 Iniciando deploy..."
-            cd /var/www/controle-pessoas || exit 1
-            git pull origin main
-            npm install
-            pm2 restart controle-pessoas
-            echo "✅ Deploy finalizado com sucesso!"
+          ssh -i key.pem -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+            cd /root/CONTROLE_PESSOAS
+            git pull origin main || exit 1
+            docker compose down
+            docker compose up -d --build
+            echo "Deploy com Docker finalizado com sucesso!"
           EOF
