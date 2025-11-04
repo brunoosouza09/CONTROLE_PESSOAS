@@ -19,9 +19,21 @@ jobs:
       - name: Deploy via SSH com Docker
         run: |
           ssh -i key.pem -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-            cd /root/CONTROLE_PESSOAS
+            set -e
+            cd /root/CONTROLE_PESSOAS || exit 1
+            echo "Fazendo pull do código..."
             git pull origin main || exit 1
-            docker compose down
+            echo "Parando containers existentes..."
+            docker compose down || true
+            echo "Construindo e iniciando containers..."
             docker compose up -d --build
+            echo "Aguardando containers iniciarem..."
+            sleep 10
+            echo "Verificando status dos containers..."
+            docker compose ps
+            echo "Verificando logs do MySQL..."
+            docker compose logs mysql --tail=20
+            echo "Verificando logs do App..."
+            docker compose logs app --tail=20
             echo "Deploy com Docker finalizado com sucesso!"
           EOF
