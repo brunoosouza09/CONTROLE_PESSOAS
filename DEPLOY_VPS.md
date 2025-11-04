@@ -54,7 +54,38 @@ No repositório GitHub, vá em **Settings > Secrets and variables > Actions** e 
 - `SSH_USER`: Usuário SSH (ex: `root`)
 - `SSH_HOST`: IP ou domínio da VPS
 
-### 6. Testar Deploy Manualmente na VPS
+### 6. Resolver Conflitos Git (se necessário)
+Se você encontrar erros ao fazer `git pull` (arquivos locais modificados):
+
+**Opção 1: Usar o script automático**
+```bash
+cd /root/CONTROLE_PESSOAS
+chmod +x fix-vps-git.sh
+./fix-vps-git.sh
+```
+
+**Opção 2: Manualmente**
+```bash
+cd /root/CONTROLE_PESSOAS
+
+# Fazer backup dos arquivos locais
+mkdir -p backup
+cp docker-compose.yml nginx.conf backup/ 2>/dev/null || true
+
+# Fazer stash das mudanças
+git stash
+
+# Remover arquivos não rastreados que conflitam
+rm -f .dockerignore Dockerfile
+
+# Restaurar arquivos do repositório
+git checkout -- docker-compose.yml nginx.conf
+
+# Fazer pull
+git pull origin main
+```
+
+### 7. Testar Deploy Manualmente na VPS
 ```bash
 cd /root/CONTROLE_PESSOAS
 
@@ -64,7 +95,7 @@ docker compose down
 # Remover containers antigos (se necessário)
 docker compose rm -f
 
-# Fazer pull do código mais recente
+# Fazer pull do código mais recente (se ainda não fez)
 git pull origin main
 
 # Construir e subir containers
@@ -74,7 +105,7 @@ docker compose up -d --build
 docker compose logs -f
 ```
 
-### 7. Verificar Status dos Containers
+### 8. Verificar Status dos Containers
 ```bash
 # Ver containers rodando
 docker ps
@@ -88,7 +119,7 @@ docker logs controle_pessoas_nginx
 docker exec controle_pessoas_mysql mysqladmin ping -h localhost
 ```
 
-### 8. Verificar Portas
+### 9. Verificar Portas
 ```bash
 # Verificar se as portas estão abertas
 sudo netstat -tulpn | grep -E ':(80|3000|3306)'
@@ -97,7 +128,7 @@ sudo netstat -tulpn | grep -E ':(80|3000|3306)'
 sudo ss -tulpn | grep -E ':(80|3000|3306)'
 ```
 
-### 9. Configurar Firewall (se necessário)
+### 10. Configurar Firewall (se necessário)
 ```bash
 # UFW (Ubuntu)
 sudo ufw allow 80/tcp
@@ -106,7 +137,7 @@ sudo ufw allow 3000/tcp  # Apenas para testes
 sudo ufw enable
 ```
 
-### 10. Verificar Nginx
+### 11. Verificar Nginx
 ```bash
 # Testar configuração do nginx
 docker exec controle_pessoas_nginx nginx -t
