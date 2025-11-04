@@ -5,7 +5,7 @@ echo ""
 
 # Verificar se a tabela existe
 echo "Verificando se a tabela 'pessoas' existe..."
-TABLE_EXISTS=$(docker exec controle_pessoas_mysql mysql -u root -e "USE cadastro_pessoas; SHOW TABLES LIKE 'pessoas';" 2>/dev/null | grep -c pessoas || echo "0")
+TABLE_EXISTS=$(docker exec controle_pessoas_mysql mysql -u root -proot -e "USE cadastro_pessoas; SHOW TABLES LIKE 'pessoas';" 2>/dev/null | grep -c pessoas || echo "0")
 
 if [ "$TABLE_EXISTS" -eq "0" ]; then
     echo "❌ Tabela 'pessoas' NÃO existe!"
@@ -13,7 +13,7 @@ if [ "$TABLE_EXISTS" -eq "0" ]; then
     echo "Criando tabela..."
     
     # Criar tabela diretamente
-    docker exec -i controle_pessoas_mysql mysql -u root cadastro_pessoas << EOF
+    docker exec -i controle_pessoas_mysql mysql -u root -proot cadastro_pessoas << EOF
 CREATE TABLE IF NOT EXISTS pessoas (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(120) NOT NULL,
@@ -44,11 +44,11 @@ fi
 
 echo ""
 echo "Verificando estrutura da tabela..."
-docker exec controle_pessoas_mysql mysql -u root -e "USE cadastro_pessoas; DESCRIBE pessoas;" 2>/dev/null
+docker exec controle_pessoas_mysql mysql -u root -proot -e "USE cadastro_pessoas; DESCRIBE pessoas;" 2>/dev/null
 
 echo ""
 echo "Contando registros..."
-docker exec controle_pessoas_mysql mysql -u root -e "USE cadastro_pessoas; SELECT COUNT(*) as total FROM pessoas;" 2>/dev/null
+docker exec controle_pessoas_mysql mysql -u root -proot -e "USE cadastro_pessoas; SELECT COUNT(*) as total FROM pessoas;" 2>/dev/null
 
 echo ""
 echo "✅ Verificação concluída!"
