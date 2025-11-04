@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS pessoas (
 );
 
 -- Índice simples por email
-CREATE INDEX IF NOT EXISTS idx_pessoas_email ON pessoas(email);
+CREATE INDEX idx_pessoas_email ON pessoas(email);
 
 
 
