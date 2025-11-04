@@ -1,7 +1,5 @@
--- Cria o banco de dados e a tabela de pessoas
-CREATE DATABASE IF NOT EXISTS cadastro_pessoas CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE cadastro_pessoas;
-
+-- Cria a tabela de pessoas
+-- Nota: O banco de dados já é criado automaticamente pela variável MYSQL_DATABASE no docker-compose
 CREATE TABLE IF NOT EXISTS pessoas (
 	id INT AUTO_INCREMENT PRIMARY KEY,
 	nome VARCHAR(120) NOT NULL,
