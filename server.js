@@ -42,7 +42,8 @@ app.get('/api/people', async (req, res) => {
         );
         res.json(rows);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Erro ao buscar pessoas:', err);
+        res.status(500).json({ error: err.message, code: err.code });
     }
 });
 
