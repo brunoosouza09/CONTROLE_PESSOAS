@@ -16,22 +16,39 @@ jobs:
 
       - name: Verificar e configurar secrets
         run: |
+          echo "🔍 Verificando secrets..."
+          echo "Listando secrets disponíveis (nomes apenas)..."
+          
+          # Verificar SSH_KEY
           if [ -z "${{ secrets.SSH_KEY }}" ]; then
-            echo "❌ Secret SSH_KEY não configurado!"
+            echo "❌ Secret SSH_KEY não configurado ou vazio!"
+            echo "💡 Verifique em: Settings > Secrets and variables > Actions"
+            echo "💡 O nome deve ser exatamente: SSH_KEY (maiúsculas)"
             exit 1
+          else
+            SSH_KEY_LEN=${#SSH_KEY}
+            echo "✅ SSH_KEY configurado (tamanho: ${SSH_KEY_LEN} caracteres)"
           fi
+          
+          # Verificar SSH_HOST
           if [ -z "${{ secrets.SSH_HOST }}" ]; then
-            echo "❌ Secret SSH_HOST não configurado!"
-            echo "💡 Configure o secret SSH_HOST com o IP ou domínio da VPS"
+            echo "❌ Secret SSH_HOST não configurado ou vazio!"
+            echo "💡 Configure o secret SSH_HOST com o IP: 191.252.214.59"
             exit 1
+          else
+            echo "✅ SSH_HOST: ${{ secrets.SSH_HOST }}"
           fi
+          
+          # Configurar SSH_USER (opcional, padrão é root)
           SSH_USER="${{ secrets.SSH_USER }}"
           if [ -z "$SSH_USER" ]; then
             SSH_USER="root"
+            echo "ℹ️ SSH_USER não configurado, usando padrão: root"
+          else
+            echo "✅ SSH_USER: $SSH_USER"
           fi
-          echo "✅ SSH_USER: $SSH_USER"
-          echo "✅ SSH_HOST: ${{ secrets.SSH_HOST }}"
-          echo "✅ SSH_KEY configurado"
+          
+          echo "✅ Todos os secrets necessários estão configurados!"
 
       - name: Adiciona chave SSH
         run: |
