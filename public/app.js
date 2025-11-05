@@ -8,13 +8,129 @@ const resetBtn = document.getElementById("reset-btn");
 const submitBtn = document.getElementById("submit-btn");
 const editingId = document.getElementById("editing-id");
 
+// Verificar autenticação ao carregar
+async function verificarAutenticacao() {
+    try {
+        const res = await fetch('/api/auth/check', {
+            credentials: 'include'
+        });
+        const data = await res.json();
+        if (!data.authenticated) {
+            window.location.href = '/login.html';
+            return false;
+        }
+        return true;
+    } catch (err) {
+        console.error('Erro ao verificar autenticação:', err);
+        window.location.href = '/login.html';
+        return false;
+    }
+}
+
+// Funções de validação
+function validarEmail(email) {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+}
+
+function validarCPF(cpf) {
+    if (!cpf) return true; // CPF é opcional
+    const cpfLimpo = cpf.replace(/\D/g, '');
+    if (cpfLimpo.length !== 11) return false;
+    if (/^(\d)\1{10}$/.test(cpfLimpo)) return false;
+    
+    let soma = 0;
+    for (let i = 0; i < 9; i++) {
+        soma += parseInt(cpfLimpo.charAt(i)) * (10 - i);
+    }
+    let resto = (soma * 10) % 11;
+    if (resto === 10 || resto === 11) resto = 0;
+    if (resto !== parseInt(cpfLimpo.charAt(9))) return false;
+    
+    soma = 0;
+    for (let i = 0; i < 10; i++) {
+        soma += parseInt(cpfLimpo.charAt(i)) * (11 - i);
+    }
+    resto = (soma * 10) % 11;
+    if (resto === 10 || resto === 11) resto = 0;
+    if (resto !== parseInt(cpfLimpo.charAt(10))) return false;
+    
+    return true;
+}
+
+function validarTelefone(telefone) {
+    if (!telefone) return true;
+    const telefoneLimpo = telefone.replace(/\D/g, '');
+    return telefoneLimpo.length >= 10 && telefoneLimpo.length <= 11;
+}
+
+function validarCEP(cep) {
+    if (!cep) return true;
+    const cepLimpo = cep.replace(/\D/g, '');
+    return cepLimpo.length === 8;
+}
+
+function formatarTelefone(value) {
+    const digits = value.replace(/\D/g, '');
+    if (digits.length <= 10) {
+        return digits.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3').replace(/-$/, '');
+    } else {
+        return digits.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $5-$3').replace(/-$/, '');
+    }
+}
+
+function formatarCPF(value) {
+    const digits = value.replace(/\D/g, '');
+    return digits.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+}
+
+function formatarCEP(value) {
+    const digits = value.replace(/\D/g, '');
+    return digits.replace(/(\d{5})(\d{3})/, '$1-$2');
+}
+
+function mostrarErro(mensagem) {
+    alert(mensagem);
+}
+
+// Validação em tempo real
+document.getElementById('telefone').addEventListener('input', (e) => {
+    e.target.value = formatarTelefone(e.target.value);
+});
+
+document.getElementById('cpf').addEventListener('input', (e) => {
+    e.target.value = formatarCPF(e.target.value);
+});
+
+document.getElementById('cep').addEventListener('input', (e) => {
+    e.target.value = formatarCEP(e.target.value);
+});
+
+document.getElementById('estado').addEventListener('input', (e) => {
+    e.target.value = e.target.value.toUpperCase();
+});
+
 // Carregar lista
 async function carregarPessoas() {
     try {
-        const res = await fetch(API_BASE);
-        if (!res.ok) throw new Error("Erro ao carregar dados");
+        const res = await fetch(API_BASE, {
+            credentials: 'include'
+        });
+        if (!res.ok) {
+            if (res.status === 401) {
+                window.location.href = '/login.html';
+                return;
+            }
+            throw new Error("Erro ao carregar dados");
+        }
         const pessoas = await res.json();
         tableBody.innerHTML = "";
+        if (pessoas.length === 0) {
+            const row = document.createElement('tr');
+            row.innerHTML = '<td colspan="9" style="text-align: center; padding: 2rem;">Nenhuma pessoa cadastrada</td>';
+            tableBody.appendChild(row);
+            return;
+        }
         pessoas.forEach(pessoa => {
             const row = rowTemplate.content.cloneNode(true);
             row.querySelector(".col-id").textContent = pessoa.id;
@@ -32,15 +148,15 @@ async function carregarPessoas() {
             tableBody.appendChild(row);
         });
     } catch (err) {
-        alert("Falha ao carregar");
+        mostrarErro("Falha ao carregar dados");
         console.error(err);
     }
 }
 
 // Preencher formulário para edição
 function preencherFormulario(pessoa) {
-    document.getElementById("nome").value = pessoa.nome;
-    document.getElementById("email").value = pessoa.email;
+    document.getElementById("nome").value = pessoa.nome || "";
+    document.getElementById("email").value = pessoa.email || "";
     document.getElementById("telefone").value = pessoa.telefone || "";
     document.getElementById("cpf").value = pessoa.cpf || "";
     document.getElementById("data_nascimento").value = pessoa.data_nascimento || "";
@@ -52,6 +168,7 @@ function preencherFormulario(pessoa) {
     editingId.value = pessoa.id;
     resetBtn.hidden = false;
     submitBtn.textContent = "Atualizar";
+    form.scrollIntoView({ behavior: 'smooth' });
 }
 
 // Limpar formulário
@@ -62,36 +179,108 @@ function limparFormulario() {
     submitBtn.textContent = "Salvar";
 }
 
+// Validar formulário
+function validarFormulario() {
+    const nome = document.getElementById("nome").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const telefone = document.getElementById("telefone").value;
+    const cpf = document.getElementById("cpf").value;
+    const cep = document.getElementById("cep").value;
+    const estado = document.getElementById("estado").value.trim();
+    
+    if (!nome || nome.length < 3) {
+        mostrarErro("Nome deve ter pelo menos 3 caracteres");
+        return false;
+    }
+    
+    if (!email) {
+        mostrarErro("Email é obrigatório");
+        return false;
+    }
+    
+    if (!validarEmail(email)) {
+        mostrarErro("Email inválido");
+        return false;
+    }
+    
+    if (cpf && !validarCPF(cpf)) {
+        mostrarErro("CPF inválido");
+        return false;
+    }
+    
+    if (telefone && !validarTelefone(telefone)) {
+        mostrarErro("Telefone inválido (deve ter 10 ou 11 dígitos)");
+        return false;
+    }
+    
+    if (cep && !validarCEP(cep)) {
+        mostrarErro("CEP inválido (deve ter 8 dígitos)");
+        return false;
+    }
+    
+    if (estado && estado.length !== 2) {
+        mostrarErro("Estado deve ter 2 caracteres (UF)");
+        return false;
+    }
+    
+    return true;
+}
+
 // Salvar ou atualizar pessoa
 form.onsubmit = async (e) => {
     e.preventDefault();
+    
+    if (!validarFormulario()) {
+        return;
+    }
+    
     const dados = {
-        nome: document.getElementById("nome").value,
-        email: document.getElementById("email").value,
+        nome: document.getElementById("nome").value.trim(),
+        email: document.getElementById("email").value.trim(),
         telefone: document.getElementById("telefone").value,
         cpf: document.getElementById("cpf").value,
         data_nascimento: document.getElementById("data_nascimento").value,
-        endereco: document.getElementById("endereco").value,
-        cidade: document.getElementById("cidade").value,
-        estado: document.getElementById("estado").value,
+        endereco: document.getElementById("endereco").value.trim(),
+        cidade: document.getElementById("cidade").value.trim(),
+        estado: document.getElementById("estado").value.toUpperCase().trim(),
         cep: document.getElementById("cep").value,
         genero: document.getElementById("genero").value,
     };
+    
     const id = editingId.value;
     const url = id ? `${API_BASE}/${id}` : API_BASE;
     const method = id ? "PUT" : "POST";
+    
+    submitBtn.disabled = true;
+    submitBtn.textContent = id ? "Atualizando..." : "Salvando...";
+    
     try {
         const res = await fetch(url, {
             method,
             headers: { "Content-Type": "application/json" },
+            credentials: 'include',
             body: JSON.stringify(dados),
         });
-        if (!res.ok) throw new Error("Erro ao salvar");
+        
+        const data = await res.json();
+        
+        if (!res.ok) {
+            if (res.status === 401) {
+                window.location.href = '/login.html';
+                return;
+            }
+            throw new Error(data.error || "Erro ao salvar");
+        }
+        
         await carregarPessoas();
         limparFormulario();
+        mostrarSucesso(id ? "Pessoa atualizada com sucesso!" : "Pessoa cadastrada com sucesso!");
     } catch (err) {
-        alert("Falha ao salvar");
+        mostrarErro(err.message || "Falha ao salvar");
         console.error(err);
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = id ? "Atualizar" : "Salvar";
     }
 };
 
@@ -99,13 +288,61 @@ form.onsubmit = async (e) => {
 async function excluirPessoa(id) {
     if (!confirm("Deseja realmente excluir este registro?")) return;
     try {
-        const res = await fetch(`${API_BASE}/${id}`, { method: "DELETE" });
-        if (!res.ok) throw new Error("Erro ao excluir");
+        const res = await fetch(`${API_BASE}/${id}`, { 
+            method: "DELETE",
+            credentials: 'include'
+        });
+        if (!res.ok) {
+            if (res.status === 401) {
+                window.location.href = '/login.html';
+                return;
+            }
+            throw new Error("Erro ao excluir");
+        }
         await carregarPessoas();
+        mostrarSucesso("Pessoa excluída com sucesso!");
     } catch (err) {
-        alert("Falha ao excluir");
+        mostrarErro("Falha ao excluir");
         console.error(err);
     }
+}
+
+// Logout
+async function fazerLogout() {
+    try {
+        await fetch('/api/logout', {
+            method: 'POST',
+            credentials: 'include'
+        });
+        window.location.href = '/login.html';
+    } catch (err) {
+        console.error('Erro ao fazer logout:', err);
+        window.location.href = '/login.html';
+    }
+}
+
+function mostrarSucesso(mensagem) {
+    // Criar notificação de sucesso
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #4CAF50;
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 4px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        z-index: 1000;
+        animation: slideIn 0.3s ease;
+    `;
+    notification.textContent = mensagem;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
 }
 
 // Botões
@@ -113,4 +350,9 @@ reloadBtn.onclick = carregarPessoas;
 resetBtn.onclick = limparFormulario;
 
 // Inicialização
-carregarPessoas();
+(async () => {
+    const autenticado = await verificarAutenticacao();
+    if (autenticado) {
+        carregarPessoas();
+    }
+})();
