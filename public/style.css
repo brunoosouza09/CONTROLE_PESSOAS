@@ -13,24 +13,29 @@ button.secondary{background:transparent;border-color:var(--border);color:var(--t
 button.danger{background:var(--danger)}
 button:disabled{opacity:.6;cursor:not-allowed}
 .list-header{display:flex;align-items:center;justify-content:space-between}
-table{width:100%;border-collapse:collapse;table-layout:fixed}
-th,td{padding:10px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle;word-wrap:break-word}
-th{color:var(--muted);font-weight:600}
+table{width:100%;border-collapse:collapse;table-layout:auto}
+th,td{padding:12px 8px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle}
+th{color:var(--muted);font-weight:600;white-space:nowrap;font-size:14px}
 tbody tr:hover{background:#0b1220}
-.col-id{width:4%}
-.col-nome{width:10%}
-.col-email{width:14%}
-.col-telefone{width:10%}
-.col-cpf{width:11%}
-.col-nascimento{width:11%}
-.col-cidade{width:11%}
-.col-estado{width:7%;text-align:center}
-.col-actions{width:22%;display:flex;gap:8px;white-space:nowrap;justify-content:center;align-items:center;padding:10px}
-.col-actions button{padding:6px 12px;font-size:14px;min-width:70px;flex-shrink:0}
+.col-id{min-width:50px;width:auto}
+.col-nome{min-width:120px;width:auto}
+.col-email{min-width:180px;width:auto}
+.col-telefone{min-width:130px;width:auto;white-space:nowrap}
+.col-cpf{min-width:140px;width:auto;white-space:nowrap}
+.col-nascimento{min-width:120px;width:auto;white-space:nowrap}
+.col-cidade{min-width:150px;width:auto;word-break:break-word}
+.col-estado{min-width:70px;width:auto;text-align:center;white-space:nowrap}
+.col-actions{min-width:180px;width:auto;display:flex;gap:8px;white-space:nowrap;justify-content:center;align-items:center;padding:8px}
+.col-actions button{padding:6px 12px;font-size:13px;min-width:70px;flex-shrink:0}
 @keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
 @keyframes slideOut{from{transform:translateX(0);opacity:1}to{transform:translateX(100%);opacity:0}}
 @media (max-width:1100px){.grid{grid-template-columns:repeat(2,1fr)}}
 @media (max-width:700px){.grid{grid-template-columns:1fr}}
+@media (max-width:1200px){
+    table{font-size:14px}
+    th,td{padding:8px 6px}
+    .col-actions button{padding:5px 10px;font-size:12px;min-width:60px}
+}
 
 
 

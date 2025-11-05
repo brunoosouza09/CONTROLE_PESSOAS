@@ -194,8 +194,11 @@ async function carregarPessoas() {
                 const cpf = pessoa.cpf.replace(/\D/g, '');
                 if (cpf.length === 11) {
                     cpfFormatado = cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-                } else {
-                    cpfFormatado = pessoa.cpf;
+                } else if (cpf.length > 11) {
+                    // Se tiver mais de 11 dígitos, pegar apenas os primeiros 11
+                    cpfFormatado = cpf.slice(0, 11).replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+                } else if (cpf.length > 0) {
+                    cpfFormatado = cpf;
                 }
             }
             row.querySelector(".col-cpf").textContent = cpfFormatado;
