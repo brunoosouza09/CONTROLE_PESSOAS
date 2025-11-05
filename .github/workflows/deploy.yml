@@ -14,29 +14,50 @@ jobs:
       - name: Checkout do código
         uses: actions/checkout@v3
 
+      - name: Verificar secrets
+        run: |
+          if [ -z "${{ secrets.SSH_KEY }}" ]; then
+            echo "❌ Secret SSH_KEY não configurado!"
+            exit 1
+          fi
+          if [ -z "${{ secrets.SSH_USER }}" ]; then
+            echo "❌ Secret SSH_USER não configurado!"
+            exit 1
+          fi
+          if [ -z "${{ secrets.SSH_HOST }}" ]; then
+            echo "❌ Secret SSH_HOST não configurado!"
+            exit 1
+          fi
+          echo "✅ Secrets configurados"
+
       - name: Adiciona chave SSH
         run: |
+          mkdir -p ~/.ssh
           echo "${{ secrets.SSH_KEY }}" > key.pem
           chmod 600 key.pem
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
+
+      - name: Testar conexão SSH
+        run: |
+          ssh -i key.pem -o StrictHostKeyChecking=no -o ConnectTimeout=10 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} echo "✅ Conexão SSH OK" || (echo "❌ Falha na conexão SSH" && exit 1)
 
       - name: Deploy via SSH com Docker
         run: |
-          ssh -i key.pem -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+          ssh -i key.pem -o StrictHostKeyChecking=no -o ConnectTimeout=10 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
             set -e
-            cd /root/CONTROLE_PESSOAS || exit 1
-            echo "Fazendo pull do código..."
-            git pull origin main || exit 1
-            echo "Parando containers existentes..."
+            echo "📁 Acessando diretório..."
+            cd /root/CONTROLE_PESSOAS || { echo "❌ Diretório não encontrado"; exit 1; }
+            echo "📥 Fazendo pull do código..."
+            git pull origin main || { echo "❌ Falha no git pull"; exit 1; }
+            echo "🛑 Parando containers existentes..."
             docker compose down || true
-            echo "Construindo e iniciando containers..."
-            docker compose up -d --build
-            echo "Aguardando containers iniciarem..."
-            sleep 10
-            echo "Verificando status dos containers..."
+            echo "🔨 Construindo e iniciando containers..."
+            docker compose up -d --build || { echo "❌ Falha ao iniciar containers"; exit 1; }
+            echo "⏳ Aguardando containers iniciarem..."
+            sleep 15
+            echo "✅ Verificando status dos containers..."
             docker compose ps
-            echo "Verificando logs do MySQL..."
-            docker compose logs mysql --tail=20
-            echo "Verificando logs do App..."
-            docker compose logs app --tail=20
-            echo "Deploy com Docker finalizado com sucesso!"
+            echo "📋 Verificando logs do App..."
+            docker compose logs app --tail=30
+            echo "✨ Deploy finalizado com sucesso!"
           EOF
