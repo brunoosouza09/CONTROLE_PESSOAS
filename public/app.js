@@ -72,10 +72,27 @@ function validarCEP(cep) {
 
 function formatarTelefone(value) {
     const digits = value.replace(/\D/g, '');
-    if (digits.length <= 10) {
-        return digits.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3').replace(/-$/, '');
+    // Limitar a 11 dígitos (máximo para celular brasileiro)
+    const limitedDigits = digits.slice(0, 11);
+    
+    if (limitedDigits.length <= 10) {
+        // Telefone fixo: (99) 9999-9999
+        if (limitedDigits.length <= 2) {
+            return limitedDigits.length > 0 ? `(${limitedDigits}` : '';
+        } else if (limitedDigits.length <= 6) {
+            return `(${limitedDigits.slice(0, 2)}) ${limitedDigits.slice(2)}`;
+        } else {
+            return `(${limitedDigits.slice(0, 2)}) ${limitedDigits.slice(2, 6)}-${limitedDigits.slice(6)}`;
+        }
     } else {
-        return digits.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $5-$3').replace(/-$/, '');
+        // Celular: (99) 99999-9999
+        if (limitedDigits.length <= 2) {
+            return limitedDigits.length > 0 ? `(${limitedDigits}` : '';
+        } else if (limitedDigits.length <= 7) {
+            return `(${limitedDigits.slice(0, 2)}) ${limitedDigits.slice(2)}`;
+        } else {
+            return `(${limitedDigits.slice(0, 2)}) ${limitedDigits.slice(2, 7)}-${limitedDigits.slice(7)}`;
+        }
     }
 }
 
