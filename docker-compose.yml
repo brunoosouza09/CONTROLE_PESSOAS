@@ -84,7 +84,21 @@ services:
       - prometheus
     restart: unless-stopped
 
+  uptime-kuma:
+    image: louislam/uptime-kuma:latest
+    container_name: controle_pessoas_uptime_kuma
+    volumes:
+      - uptime_kuma_data:/app/data
+    ports:
+      - "3002:3001"
+    networks:
+      - default
+    restart: unless-stopped
+    environment:
+      - UPTIME_KUMA_PORT=3001
+
 volumes:
   mysql_data:
   prometheus_data:
   grafana_data:
+  uptime_kuma_data:
