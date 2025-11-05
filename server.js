@@ -3,33 +3,35 @@ const cors = require('cors');
 const mysql = require('mysql2/promise');
 const bcrypt = require('bcrypt');
 const session = require('express-session');
+const logger = require('./utils/logger');
+const { httpLogger, errorHandler, notFoundHandler, authLogger } = require('./middleware/monitoring');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-
-// Configuração CORS antes de sessão
-app.use(cors({
-    origin: true,
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-}));
 
 // Configuração de sessão
 app.use(session({
     secret: process.env.SESSION_SECRET || 'sua-chave-secreta-super-segura-aqui',
     resave: false,
     saveUninitialized: false,
-    name: 'sessionId', // Nome do cookie
     cookie: {
         secure: false, // true em produção com HTTPS
         httpOnly: true,
-        sameSite: 'lax', // Importante para funcionar com proxy
         maxAge: 24 * 60 * 60 * 1000 // 24 horas
     }
 }));
+
+app.use(cors({
+    origin: true,
+    credentials: true
+}));
 app.use(express.json());
+
+// Middleware de monitoramento
+app.use(httpLogger);
+app.use(authLogger);
+
 app.use(express.static('public'));
 
 // MySQL pool
@@ -146,10 +148,8 @@ app.post('/api/logout', (req, res) => {
     });
 });
 
-// Verificar autenticação (não requer autenticação)
+// Verificar autenticação
 app.get('/api/auth/check', (req, res) => {
-    console.log('Auth check - Session:', req.session ? 'exists' : 'null');
-    console.log('Auth check - userId:', req.session?.userId);
     if (req.session && req.session.userId) {
         res.json({ 
             authenticated: true, 
@@ -227,7 +227,7 @@ app.post('/api/people', requireAuth, async (req, res) => {
             return res.status(400).json({ error: 'Email já cadastrado' });
         }
     } catch (err) {
-        console.error('Erro ao verificar email:', err);
+        logger.error('Erro ao verificar email', err);
     }
     
     try {
@@ -261,7 +261,7 @@ app.post('/api/people', requireAuth, async (req, res) => {
             genero: genero || null,
         });
     } catch (err) {
-        console.error('Erro ao criar pessoa:', err);
+        logger.error('Erro ao criar pessoa', err);
         if (err.code === 'ER_DUP_ENTRY') {
             return res.status(400).json({ error: 'Email já cadastrado' });
         }
@@ -310,7 +310,7 @@ app.put('/api/people/:id', requireAuth, async (req, res) => {
             return res.status(400).json({ error: 'Email já cadastrado para outro registro' });
         }
     } catch (err) {
-        console.error('Erro ao verificar email:', err);
+        logger.error('Erro ao verificar email', err);
     }
     
     try {
@@ -345,7 +345,7 @@ app.put('/api/people/:id', requireAuth, async (req, res) => {
             genero: genero || null,
         });
     } catch (err) {
-        console.error('Erro ao atualizar pessoa:', err);
+        logger.error('Erro ao atualizar pessoa', err);
         if (err.code === 'ER_DUP_ENTRY') {
             return res.status(400).json({ error: 'Email já cadastrado' });
         }
@@ -361,7 +361,7 @@ app.delete('/api/people/:id', requireAuth, async (req, res) => {
         if (result.affectedRows === 0) return res.status(404).json({ error: 'Registro não encontrado' });
         res.status(204).send();
     } catch (err) {
-        console.error('Erro ao excluir pessoa:', err);
+        logger.error('Erro ao excluir pessoa', err);
         res.status(500).json({ error: 'Erro ao excluir pessoa' });
     }
 });

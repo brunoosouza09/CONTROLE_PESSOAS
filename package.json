@@ -10,7 +10,9 @@
     "create-admin": "node scripts/create-admin-user.js",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "logs": "tail -f logs/app.log",
+    "logs:error": "tail -f logs/error.log"
   },
   "keywords": [],
   "author": "",
