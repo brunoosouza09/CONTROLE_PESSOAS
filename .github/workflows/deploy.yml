@@ -128,8 +128,12 @@ jobs:
             set -e
             echo "📁 Acessando diretório..."
             cd /root/CONTROLE_PESSOAS || { echo "❌ Diretório não encontrado"; exit 1; }
+            echo "🧹 Limpando mudanças locais..."
+            git reset --hard HEAD || true
+            git clean -fd || true
             echo "📥 Fazendo pull do código..."
-            git pull origin main || { echo "❌ Falha no git pull"; exit 1; }
+            git fetch origin
+            git reset --hard origin/main || { echo "❌ Falha no git pull"; exit 1; }
             echo "🛑 Parando containers existentes..."
             docker compose down || true
             echo "🔨 Construindo e iniciando containers..."
