@@ -9,6 +9,7 @@ on:
 jobs:
   main:
     runs-on: ubuntu-latest
+    environment: implantar-ssh
 
     steps:
       - name: Checkout do código
@@ -16,36 +17,42 @@ jobs:
 
       - name: Verificar e configurar secrets
         run: |
-          echo "🔍 Verificando secrets..."
-          echo "Listando secrets disponíveis (nomes apenas)..."
+          echo "🔍 Verificando secrets do ambiente 'implantar-ssh'..."
           
-          # Verificar SSH_KEY
-          if [ -z "${{ secrets.SSH_KEY }}" ]; then
-            echo "❌ Secret SSH_KEY não configurado ou vazio!"
-            echo "💡 Verifique em: Settings > Secrets and variables > Actions"
-            echo "💡 O nome deve ser exatamente: SSH_KEY (maiúsculas)"
-            exit 1
+          # Verificar CLOUD_SSH_KEY (ou SSH_KEY como fallback)
+          if [ -n "${{ secrets.CLOUD_SSH_KEY }}" ]; then
+            SSH_KEY_VALUE="${{ secrets.CLOUD_SSH_KEY }}"
+            echo "✅ CLOUD_SSH_KEY encontrado"
+          elif [ -n "${{ secrets.SSH_KEY }}" ]; then
+            SSH_KEY_VALUE="${{ secrets.SSH_KEY }}"
+            echo "✅ SSH_KEY encontrado"
           else
-            SSH_KEY_LEN=${#SSH_KEY}
-            echo "✅ SSH_KEY configurado (tamanho: ${SSH_KEY_LEN} caracteres)"
+            echo "❌ Secret SSH_KEY/CLOUD_SSH_KEY não configurado!"
+            exit 1
           fi
           
-          # Verificar SSH_HOST
-          if [ -z "${{ secrets.SSH_HOST }}" ]; then
-            echo "❌ Secret SSH_HOST não configurado ou vazio!"
-            echo "💡 Configure o secret SSH_HOST com o IP: 191.252.214.59"
-            exit 1
+          # Verificar CLOUD_HOST (ou SSH_HOST como fallback)
+          if [ -n "${{ secrets.CLOUD_HOST }}" ]; then
+            SSH_HOST_VALUE="${{ secrets.CLOUD_HOST }}"
+            echo "✅ CLOUD_HOST: $SSH_HOST_VALUE"
+          elif [ -n "${{ secrets.SSH_HOST }}" ]; then
+            SSH_HOST_VALUE="${{ secrets.SSH_HOST }}"
+            echo "✅ SSH_HOST: $SSH_HOST_VALUE"
           else
-            echo "✅ SSH_HOST: ${{ secrets.SSH_HOST }}"
+            echo "❌ Secret SSH_HOST/CLOUD_HOST não configurado!"
+            exit 1
           fi
           
-          # Configurar SSH_USER (opcional, padrão é root)
-          SSH_USER="${{ secrets.SSH_USER }}"
-          if [ -z "$SSH_USER" ]; then
-            SSH_USER="root"
-            echo "ℹ️ SSH_USER não configurado, usando padrão: root"
+          # Configurar SSH_USER (CLOUD_USER ou SSH_USER ou root como padrão)
+          if [ -n "${{ secrets.CLOUD_USER }}" ]; then
+            SSH_USER_VALUE="${{ secrets.CLOUD_USER }}"
+            echo "✅ CLOUD_USER: $SSH_USER_VALUE"
+          elif [ -n "${{ secrets.SSH_USER }}" ]; then
+            SSH_USER_VALUE="${{ secrets.SSH_USER }}"
+            echo "✅ SSH_USER: $SSH_USER_VALUE"
           else
-            echo "✅ SSH_USER: $SSH_USER"
+            SSH_USER_VALUE="root"
+            echo "ℹ️ Usando padrão: root"
           fi
           
           echo "✅ Todos os secrets necessários estão configurados!"
@@ -53,17 +60,37 @@ jobs:
       - name: Adiciona chave SSH
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_KEY }}" > key.pem
+          # Usar CLOUD_SSH_KEY se existir, senão SSH_KEY
+          if [ -n "${{ secrets.CLOUD_SSH_KEY }}" ]; then
+            echo "${{ secrets.CLOUD_SSH_KEY }}" > key.pem
+          else
+            echo "${{ secrets.SSH_KEY }}" > key.pem
+          fi
           chmod 600 key.pem
-          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
+          # Usar CLOUD_HOST se existir, senão SSH_HOST
+          if [ -n "${{ secrets.CLOUD_HOST }}" ]; then
+            ssh-keyscan -H ${{ secrets.CLOUD_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
+          else
+            ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
+          fi
 
       - name: Deploy via SSH com Docker
         run: |
-          SSH_USER="${{ secrets.SSH_USER }}"
-          if [ -z "$SSH_USER" ]; then
+          # Determinar valores dos secrets
+          if [ -n "${{ secrets.CLOUD_USER }}" ]; then
+            SSH_USER="${{ secrets.CLOUD_USER }}"
+          elif [ -n "${{ secrets.SSH_USER }}" ]; then
+            SSH_USER="${{ secrets.SSH_USER }}"
+          else
             SSH_USER="root"
           fi
-          SSH_HOST="${{ secrets.SSH_HOST }}"
+          
+          if [ -n "${{ secrets.CLOUD_HOST }}" ]; then
+            SSH_HOST="${{ secrets.CLOUD_HOST }}"
+          else
+            SSH_HOST="${{ secrets.SSH_HOST }}"
+          fi
+          
           echo "🔐 Conectando como $SSH_USER@$SSH_HOST"
           ssh -i key.pem -o StrictHostKeyChecking=no -o ConnectTimeout=10 ${SSH_USER}@${SSH_HOST} << 'EOF'
             set -e
