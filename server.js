@@ -5,6 +5,7 @@ const bcrypt = require('bcrypt');
 const session = require('express-session');
 const logger = require('./utils/logger');
 const { httpLogger, errorHandler, notFoundHandler, authLogger } = require('./middleware/monitoring');
+const { metricsMiddleware, recordError, updateDbConnections, recordDbQuery, updateActiveUsers, getMetrics: getPrometheusMetrics } = require('./routes/prometheus');
 require('dotenv').config();
 
 const app = express();
@@ -31,6 +32,7 @@ app.use(express.json());
 // Middleware de monitoramento
 app.use(httpLogger);
 app.use(authLogger);
+app.use(metricsMiddleware); // Métricas Prometheus
 
 app.use(express.static('public'));
 
@@ -276,6 +278,7 @@ app.post('/api/people', requireAuth, async (req, res) => {
         });
     } catch (err) {
         logger.error('Erro ao criar pessoa', err);
+        recordError('db_error', '/api/people');
         if (err.code === 'ER_DUP_ENTRY') {
             return res.status(400).json({ error: 'Email já cadastrado' });
         }
@@ -360,6 +363,7 @@ app.put('/api/people/:id', requireAuth, async (req, res) => {
         });
     } catch (err) {
         logger.error('Erro ao atualizar pessoa', err);
+        recordError('db_error', '/api/people');
         if (err.code === 'ER_DUP_ENTRY') {
             return res.status(400).json({ error: 'Email já cadastrado' });
         }
@@ -371,11 +375,13 @@ app.put('/api/people/:id', requireAuth, async (req, res) => {
 app.delete('/api/people/:id', requireAuth, async (req, res) => {
     const { id } = req.params;
     try {
+        recordDbQuery('DELETE');
         const [result] = await pool.query('DELETE FROM pessoas WHERE id = ?', [id]);
         if (result.affectedRows === 0) return res.status(404).json({ error: 'Registro não encontrado' });
         res.status(204).send();
     } catch (err) {
         logger.error('Erro ao excluir pessoa', err);
+        recordError('db_error', '/api/people');
         res.status(500).json({ error: 'Erro ao excluir pessoa' });
     }
 });
