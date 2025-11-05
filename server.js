@@ -133,7 +133,7 @@ app.post('/api/login', async (req, res) => {
             user: { id: usuario.id, nome: usuario.nome }
         });
     } catch (err) {
-        console.error('Erro no login:', err);
+        logger.error('Erro no login', err);
         res.status(500).json({ error: 'Erro ao fazer login' });
     }
 });
@@ -166,11 +166,25 @@ app.get('/api/health', async (req, res) => {
         const conn = await pool.getConnection();
         await conn.ping();
         conn.release();
-        res.json({ ok: true });
+        res.json({ 
+            ok: true,
+            timestamp: new Date().toISOString(),
+            database: 'connected'
+        });
     } catch (err) {
-        res.status(500).json({ ok: false, error: err.message });
+        logger.error('Health check falhou', err);
+        res.status(500).json({ 
+            ok: false, 
+            error: err.message,
+            timestamp: new Date().toISOString(),
+            database: 'disconnected'
+        });
     }
 });
+
+// Métricas para monitoramento
+const { getMetrics } = require('./routes/metrics');
+app.get('/api/metrics', requireAuth, getMetrics);
 
 // ==================== ROTAS DE PESSOAS (PROTEGIDAS) ====================
 
@@ -182,7 +196,7 @@ app.get('/api/people', requireAuth, async (req, res) => {
         );
         res.json(rows);
     } catch (err) {
-        console.error('Erro ao buscar pessoas:', err);
+        logger.error('Erro ao buscar pessoas', err);
         res.status(500).json({ error: err.message, code: err.code });
     }
 });
@@ -366,7 +380,27 @@ app.delete('/api/people/:id', requireAuth, async (req, res) => {
     }
 });
 
+// Middleware de erro (deve ser o último)
+app.use(notFoundHandler);
+app.use(errorHandler);
+
 // Start server
 app.listen(PORT, () => {
-    console.log(`Servidor rodando na porta ${PORT}`);
+    logger.info(`Servidor iniciado na porta ${PORT}`, {
+        environment: process.env.NODE_ENV || 'development',
+        port: PORT
+    });
+});
+
+// Capturar erros não tratados
+process.on('uncaughtException', (error) => {
+    logger.fatal('Erro não capturado (uncaughtException)', error);
+    process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    logger.fatal('Promise rejeitada não tratada (unhandledRejection)', {
+        reason,
+        promise
+    });
 });
