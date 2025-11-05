@@ -1,4 +1,4 @@
-:root{--bg:#0f172a;--card:#111827;--text:#e5e7eb;--muted:#9ca3af;--accent:#22c55e;--accent-2:#3b82f6;--danger:#ef4444;--border:#1f2937}
+:root{--bg:#e3f2fd;--card:#ffffff;--text:#1a1a1a;--muted:#6b7280;--accent:#22c55e;--accent-2:#3b82f6;--danger:#ef4444;--border:#e5e7eb}
 *{box-sizing:border-box}html,body{height:100%}body{margin:0;background:var(--bg);color:var(--text);font:16px system-ui,Segoe UI,Roboto,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji}
 .container{max-width:1400px;margin:40px auto;padding:0 20px}
 h1{margin:0 0 20px}
@@ -6,7 +6,7 @@ h1{margin:0 0 20px}
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
 label{display:flex;flex-direction:column;gap:6px}
 label span{font-size:12px;color:var(--muted)}
-input,select{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:#0b1220;color:var(--text)}
+input,select{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:#ffffff;color:var(--text)}
 .actions{display:flex;gap:8px;margin-top:12px}
 button{appearance:none;border:1px solid transparent;background:var(--accent-2);color:#fff;padding:10px 14px;border-radius:8px;cursor:pointer}
 button.secondary{background:transparent;border-color:var(--border);color:var(--text)}
@@ -16,7 +16,7 @@ button:disabled{opacity:.6;cursor:not-allowed}
 table{width:100%;border-collapse:collapse;table-layout:auto}
 th,td{padding:12px 8px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle}
 th{color:var(--muted);font-weight:600;white-space:nowrap;font-size:14px}
-tbody tr:hover{background:#0b1220}
+tbody tr:hover{background:#bbdefb}
 .col-id{min-width:50px;width:auto}
 .col-nome{min-width:120px;width:auto}
 .col-email{min-width:180px;width:auto}
