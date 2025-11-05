@@ -107,7 +107,27 @@ function formatarCEP(value) {
 }
 
 function mostrarErro(mensagem) {
-    alert(mensagem);
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #ef4444;
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        z-index: 1000;
+        animation: slideIn 0.3s ease;
+        max-width: 400px;
+    `;
+    notification.textContent = mensagem;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+    }, 4000);
 }
 
 // Validação em tempo real
@@ -151,11 +171,51 @@ async function carregarPessoas() {
         pessoas.forEach(pessoa => {
             const row = rowTemplate.content.cloneNode(true);
             row.querySelector(".col-id").textContent = pessoa.id;
-            row.querySelector(".col-nome").textContent = pessoa.nome;
-            row.querySelector(".col-email").textContent = pessoa.email;
-            row.querySelector(".col-telefone").textContent = pessoa.telefone || "-";
-            row.querySelector(".col-cpf").textContent = pessoa.cpf || "-";
-            row.querySelector(".col-nascimento").textContent = pessoa.data_nascimento || "-";
+            row.querySelector(".col-nome").textContent = pessoa.nome || "-";
+            row.querySelector(".col-email").textContent = pessoa.email || "-";
+            
+            // Formatar telefone para exibição
+            let telefoneFormatado = "-";
+            if (pessoa.telefone) {
+                const tel = pessoa.telefone.replace(/\D/g, '');
+                if (tel.length === 10) {
+                    telefoneFormatado = tel.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+                } else if (tel.length === 11) {
+                    telefoneFormatado = tel.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+                } else {
+                    telefoneFormatado = pessoa.telefone;
+                }
+            }
+            row.querySelector(".col-telefone").textContent = telefoneFormatado;
+            
+            // Formatar CPF para exibição
+            let cpfFormatado = "-";
+            if (pessoa.cpf) {
+                const cpf = pessoa.cpf.replace(/\D/g, '');
+                if (cpf.length === 11) {
+                    cpfFormatado = cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+                } else {
+                    cpfFormatado = pessoa.cpf;
+                }
+            }
+            row.querySelector(".col-cpf").textContent = cpfFormatado;
+            
+            // Formatar data de nascimento
+            let dataFormatada = "-";
+            if (pessoa.data_nascimento) {
+                try {
+                    const data = new Date(pessoa.data_nascimento);
+                    if (!isNaN(data.getTime())) {
+                        dataFormatada = data.toLocaleDateString('pt-BR');
+                    } else {
+                        dataFormatada = pessoa.data_nascimento;
+                    }
+                } catch (e) {
+                    dataFormatada = pessoa.data_nascimento;
+                }
+            }
+            row.querySelector(".col-nascimento").textContent = dataFormatada;
+            
             row.querySelector(".col-cidade").textContent = pessoa.cidade || "-";
             row.querySelector(".col-estado").textContent = pessoa.estado || "-";
             const editBtn = row.querySelector("[data-action='edit']");
@@ -174,13 +234,49 @@ async function carregarPessoas() {
 function preencherFormulario(pessoa) {
     document.getElementById("nome").value = pessoa.nome || "";
     document.getElementById("email").value = pessoa.email || "";
-    document.getElementById("telefone").value = pessoa.telefone || "";
-    document.getElementById("cpf").value = pessoa.cpf || "";
-    document.getElementById("data_nascimento").value = pessoa.data_nascimento || "";
+    
+    // Formatar telefone para o campo
+    let telefoneFormatado = "";
+    if (pessoa.telefone) {
+        const tel = pessoa.telefone.replace(/\D/g, '');
+        if (tel.length === 10) {
+            telefoneFormatado = tel.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+        } else if (tel.length === 11) {
+            telefoneFormatado = tel.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+        } else {
+            telefoneFormatado = pessoa.telefone;
+        }
+    }
+    document.getElementById("telefone").value = telefoneFormatado;
+    
+    // Formatar CPF para o campo
+    let cpfFormatado = "";
+    if (pessoa.cpf) {
+        const cpf = pessoa.cpf.replace(/\D/g, '');
+        if (cpf.length === 11) {
+            cpfFormatado = cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+        } else {
+            cpfFormatado = pessoa.cpf;
+        }
+    }
+    document.getElementById("cpf").value = cpfFormatado;
+    
+    // Formatar CEP para o campo
+    let cepFormatado = "";
+    if (pessoa.cep) {
+        const cep = pessoa.cep.replace(/\D/g, '');
+        if (cep.length === 8) {
+            cepFormatado = cep.replace(/(\d{5})(\d{3})/, '$1-$2');
+        } else {
+            cepFormatado = pessoa.cep;
+        }
+    }
+    document.getElementById("cep").value = cepFormatado;
+    
+    document.getElementById("data_nascimento").value = pessoa.data_nascimento ? pessoa.data_nascimento.split('T')[0] : "";
     document.getElementById("endereco").value = pessoa.endereco || "";
     document.getElementById("cidade").value = pessoa.cidade || "";
     document.getElementById("estado").value = pessoa.estado || "";
-    document.getElementById("cep").value = pessoa.cep || "";
     document.getElementById("genero").value = pessoa.genero || "";
     editingId.value = pessoa.id;
     resetBtn.hidden = false;
@@ -339,19 +435,19 @@ async function fazerLogout() {
 }
 
 function mostrarSucesso(mensagem) {
-    // Criar notificação de sucesso
     const notification = document.createElement('div');
     notification.style.cssText = `
         position: fixed;
         top: 20px;
         right: 20px;
-        background: #4CAF50;
+        background: #22c55e;
         color: white;
         padding: 1rem 1.5rem;
-        border-radius: 4px;
+        border-radius: 8px;
         box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         z-index: 1000;
         animation: slideIn 0.3s ease;
+        max-width: 400px;
     `;
     notification.textContent = mensagem;
     document.body.appendChild(notification);
