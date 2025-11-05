@@ -136,6 +136,7 @@ app.post('/api/login', async (req, res) => {
         });
     } catch (err) {
         logger.error('Erro no login', err);
+        recordError('login_error', '/api/login');
         res.status(500).json({ error: 'Erro ao fazer login' });
     }
 });
@@ -188,17 +189,22 @@ app.get('/api/health', async (req, res) => {
 const { getMetrics } = require('./routes/metrics');
 app.get('/api/metrics', requireAuth, getMetrics);
 
+// Endpoint Prometheus (público para scraping)
+app.get('/metrics', getPrometheusMetrics);
+
 // ==================== ROTAS DE PESSOAS (PROTEGIDAS) ====================
 
 // Get all people
 app.get('/api/people', requireAuth, async (req, res) => {
     try {
+        recordDbQuery('SELECT');
         const [rows] = await pool.query(
             'SELECT id, nome, email, telefone, cpf, data_nascimento, endereco, cidade, estado, cep, genero FROM pessoas ORDER BY id DESC'
         );
         res.json(rows);
     } catch (err) {
         logger.error('Erro ao buscar pessoas', err);
+        recordError('db_error', '/api/people');
         res.status(500).json({ error: err.message, code: err.code });
     }
 });
@@ -331,6 +337,7 @@ app.put('/api/people/:id', requireAuth, async (req, res) => {
     }
     
     try {
+        recordDbQuery('UPDATE');
         const [result] = await pool.query(
             `UPDATE pessoas SET nome = ?, email = ?, telefone = ?, cpf = ?, data_nascimento = ?, endereco = ?, cidade = ?, estado = ?, cep = ?, genero = ? WHERE id = ?`,
             [
