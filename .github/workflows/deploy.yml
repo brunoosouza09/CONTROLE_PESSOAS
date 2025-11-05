@@ -9,7 +9,6 @@ on:
 jobs:
   main:
     runs-on: ubuntu-latest
-    environment: implantar-ssh
 
     steps:
       - name: Checkout do código
@@ -17,7 +16,7 @@ jobs:
 
       - name: Verificar e configurar secrets
         run: |
-          echo "🔍 Verificando secrets do ambiente 'implantar-ssh'..."
+          echo "🔍 Verificando secrets do repositório..."
           
           # Verificar CLOUD_SSH_KEY (ou SSH_KEY como fallback)
           if [ -n "${{ secrets.CLOUD_SSH_KEY }}" ]; then
