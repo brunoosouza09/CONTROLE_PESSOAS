@@ -5,15 +5,21 @@ const mysql = require('mysql2/promise');
 require('dotenv').config();
 
 async function run() {
+    const dbName = process.env.DB_NAME || 'cadastro_pessoas';
     const connection = await mysql.createConnection({
 		host: process.env.DB_HOST || 'localhost',
 		port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 3306,
 		user: process.env.DB_USER || 'root',
 		password: process.env.DB_PASSWORD || '',
+		database: dbName,
 		multipleStatements: true,
 	});
 
 	try {
+        // Garantir que o banco existe
+        await connection.query(`CREATE DATABASE IF NOT EXISTS ${dbName} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
+        await connection.query(`USE ${dbName}`);
+        
         const schemaPath = path.join(__dirname, 'schema.sql');
         if (!fs.existsSync(schemaPath)) {
             console.error('schema.sql não encontrado');
