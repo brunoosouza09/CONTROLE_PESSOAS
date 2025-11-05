@@ -14,44 +14,12 @@ jobs:
       - name: Checkout do código
         uses: actions/checkout@v3
 
-      - name: Verificar secrets
-        run: |
-          echo "🔍 Verificando secrets..."
-          if [ -z "${{ secrets.SSH_KEY }}" ]; then
-            echo "❌ Secret SSH_KEY não configurado!"
-            echo "💡 Verifique em: Settings > Secrets and variables > Actions"
-            exit 1
-          else
-            echo "✅ SSH_KEY configurado (tamanho: ${#SSH_KEY} caracteres)"
-          fi
-          if [ -z "${{ secrets.SSH_USER }}" ]; then
-            echo "⚠️ SSH_USER não configurado, usando padrão: root"
-            export SSH_USER_VALUE="root"
-          else
-            echo "✅ SSH_USER configurado: ${{ secrets.SSH_USER }}"
-          fi
-          if [ -z "${{ secrets.SSH_HOST }}" ]; then
-            echo "❌ Secret SSH_HOST não configurado!"
-            exit 1
-          else
-            echo "✅ SSH_HOST configurado: ${{ secrets.SSH_HOST }}"
-          fi
-          echo "✅ Todos os secrets necessários estão configurados"
-
       - name: Adiciona chave SSH
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_KEY }}" > key.pem
           chmod 600 key.pem
           ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
-
-      - name: Testar conexão SSH
-        run: |
-          SSH_USER="${{ secrets.SSH_USER }}"
-          if [ -z "$SSH_USER" ]; then
-            SSH_USER="root"
-          fi
-          ssh -i key.pem -o StrictHostKeyChecking=no -o ConnectTimeout=10 ${SSH_USER}@${{ secrets.SSH_HOST }} echo "✅ Conexão SSH OK" || (echo "❌ Falha na conexão SSH" && exit 1)
 
       - name: Deploy via SSH com Docker
         run: |
