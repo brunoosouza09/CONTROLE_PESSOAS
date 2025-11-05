@@ -14,6 +14,25 @@ jobs:
       - name: Checkout do código
         uses: actions/checkout@v3
 
+      - name: Verificar e configurar secrets
+        run: |
+          if [ -z "${{ secrets.SSH_KEY }}" ]; then
+            echo "❌ Secret SSH_KEY não configurado!"
+            exit 1
+          fi
+          if [ -z "${{ secrets.SSH_HOST }}" ]; then
+            echo "❌ Secret SSH_HOST não configurado!"
+            echo "💡 Configure o secret SSH_HOST com o IP ou domínio da VPS"
+            exit 1
+          fi
+          SSH_USER="${{ secrets.SSH_USER }}"
+          if [ -z "$SSH_USER" ]; then
+            SSH_USER="root"
+          fi
+          echo "✅ SSH_USER: $SSH_USER"
+          echo "✅ SSH_HOST: ${{ secrets.SSH_HOST }}"
+          echo "✅ SSH_KEY configurado"
+
       - name: Adiciona chave SSH
         run: |
           mkdir -p ~/.ssh
@@ -27,7 +46,9 @@ jobs:
           if [ -z "$SSH_USER" ]; then
             SSH_USER="root"
           fi
-          ssh -i key.pem -o StrictHostKeyChecking=no -o ConnectTimeout=10 ${SSH_USER}@${{ secrets.SSH_HOST }} << 'EOF'
+          SSH_HOST="${{ secrets.SSH_HOST }}"
+          echo "🔐 Conectando como $SSH_USER@$SSH_HOST"
+          ssh -i key.pem -o StrictHostKeyChecking=no -o ConnectTimeout=10 ${SSH_USER}@${SSH_HOST} << 'EOF'
             set -e
             echo "📁 Acessando diretório..."
             cd /root/CONTROLE_PESSOAS || { echo "❌ Diretório não encontrado"; exit 1; }
