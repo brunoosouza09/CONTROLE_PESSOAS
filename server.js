@@ -8,21 +8,26 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Configuração CORS antes de sessão
+app.use(cors({
+    origin: true,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 // Configuração de sessão
 app.use(session({
     secret: process.env.SESSION_SECRET || 'sua-chave-secreta-super-segura-aqui',
     resave: false,
     saveUninitialized: false,
+    name: 'sessionId', // Nome do cookie
     cookie: {
         secure: false, // true em produção com HTTPS
         httpOnly: true,
+        sameSite: 'lax', // Importante para funcionar com proxy
         maxAge: 24 * 60 * 60 * 1000 // 24 horas
     }
-}));
-
-app.use(cors({
-    origin: true,
-    credentials: true
 }));
 app.use(express.json());
 app.use(express.static('public'));
@@ -141,8 +146,10 @@ app.post('/api/logout', (req, res) => {
     });
 });
 
-// Verificar autenticação
+// Verificar autenticação (não requer autenticação)
 app.get('/api/auth/check', (req, res) => {
+    console.log('Auth check - Session:', req.session ? 'exists' : 'null');
+    console.log('Auth check - userId:', req.session?.userId);
     if (req.session && req.session.userId) {
         res.json({ 
             authenticated: true, 
