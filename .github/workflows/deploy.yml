@@ -14,6 +14,19 @@ jobs:
       - name: Checkout do código
         uses: actions/checkout@v3
 
+      - name: Configurar Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Executar testes
+        run: npm test || echo "⚠️ Testes falharam, mas continuando deploy..."
+        continue-on-error: true
+
       - name: Verificar e configurar secrets
         run: |
           echo "🔍 Verificando secrets do repositório..."
