@@ -17,15 +17,15 @@ table{width:100%;border-collapse:collapse;table-layout:fixed}
 th,td{padding:10px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle;word-wrap:break-word}
 th{color:var(--muted);font-weight:600}
 tbody tr:hover{background:#0b1220}
-.col-id{width:5%}
-.col-nome{width:12%}
-.col-email{width:15%}
+.col-id{width:4%}
+.col-nome{width:10%}
+.col-email{width:14%}
 .col-telefone{width:10%}
-.col-cpf{width:12%}
-.col-nascimento{width:12%}
-.col-cidade{width:12%}
-.col-estado{width:8%;text-align:center}
-.col-actions{width:14%;display:flex;gap:8px;white-space:nowrap;justify-content:center;align-items:center;padding:10px}
+.col-cpf{width:11%}
+.col-nascimento{width:11%}
+.col-cidade{width:11%}
+.col-estado{width:7%;text-align:center}
+.col-actions{width:22%;display:flex;gap:8px;white-space:nowrap;justify-content:center;align-items:center;padding:10px}
 .col-actions button{padding:6px 12px;font-size:14px;min-width:70px;flex-shrink:0}
 @media (max-width:1100px){.grid{grid-template-columns:repeat(2,1fr)}}
 @media (max-width:700px){.grid{grid-template-columns:1fr}}
