@@ -17,16 +17,20 @@ jobs:
       - name: Verificar e configurar secrets
         run: |
           echo "🔍 Verificando secrets do repositório..."
+          set +e
           
           # Verificar CLOUD_SSH_KEY (ou SSH_KEY como fallback)
           if [ -n "${{ secrets.CLOUD_SSH_KEY }}" ]; then
             SSH_KEY_VALUE="${{ secrets.CLOUD_SSH_KEY }}"
-            echo "✅ CLOUD_SSH_KEY encontrado"
+            SSH_KEY_LEN=${#SSH_KEY_VALUE}
+            echo "✅ CLOUD_SSH_KEY encontrado (tamanho: ${SSH_KEY_LEN} caracteres)"
           elif [ -n "${{ secrets.SSH_KEY }}" ]; then
             SSH_KEY_VALUE="${{ secrets.SSH_KEY }}"
-            echo "✅ SSH_KEY encontrado"
+            SSH_KEY_LEN=${#SSH_KEY_VALUE}
+            echo "✅ SSH_KEY encontrado (tamanho: ${SSH_KEY_LEN} caracteres)"
           else
-            echo "❌ Secret SSH_KEY/CLOUD_SSH_KEY não configurado!"
+            echo "❌ Secret SSH_KEY/CLOUD_SSH_KEY não configurado ou vazio!"
+            echo "💡 Verifique se o secret existe em: Settings > Secrets and variables > Actions"
             exit 1
           fi
           
@@ -38,7 +42,8 @@ jobs:
             SSH_HOST_VALUE="${{ secrets.SSH_HOST }}"
             echo "✅ SSH_HOST: $SSH_HOST_VALUE"
           else
-            echo "❌ Secret SSH_HOST/CLOUD_HOST não configurado!"
+            echo "❌ Secret SSH_HOST/CLOUD_HOST não configurado ou vazio!"
+            echo "💡 Configure com o IP da VPS: 191.252.214.59"
             exit 1
           fi
           
@@ -55,6 +60,7 @@ jobs:
           fi
           
           echo "✅ Todos os secrets necessários estão configurados!"
+          set -e
 
       - name: Adiciona chave SSH
         run: |
@@ -75,6 +81,7 @@ jobs:
 
       - name: Deploy via SSH com Docker
         run: |
+          set -e
           # Determinar valores dos secrets
           if [ -n "${{ secrets.CLOUD_USER }}" ]; then
             SSH_USER="${{ secrets.CLOUD_USER }}"
@@ -91,6 +98,19 @@ jobs:
           fi
           
           echo "🔐 Conectando como $SSH_USER@$SSH_HOST"
+          echo "🔑 Usando chave SSH: key.pem"
+          echo "🌐 Host: $SSH_HOST"
+          
+          # Testar conexão primeiro
+          ssh -i key.pem -o StrictHostKeyChecking=no -o ConnectTimeout=10 -o BatchMode=yes ${SSH_USER}@${SSH_HOST} echo "✅ Teste de conexão SSH OK" || {
+            echo "❌ Falha na conexão SSH"
+            echo "💡 Verifique:"
+            echo "  - Chave SSH está correta?"
+            echo "  - IP/Host está correto?"
+            echo "  - Porta 22 está aberta?"
+            exit 1
+          }
+          
           ssh -i key.pem -o StrictHostKeyChecking=no -o ConnectTimeout=10 ${SSH_USER}@${SSH_HOST} << 'EOF'
             set -e
             echo "📁 Acessando diretório..."
