@@ -1,6 +1,6 @@
 # 🔔 Configuração Manual de Monitores - Uptime Kuma
 
-## ⚠️ Se o script não funcionar, use este guia manual
+## 📋 Guia Completo de Configuração Manual
 
 ## 📋 Passo a Passo Detalhado
 
