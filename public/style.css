@@ -1,42 +1,367 @@
-:root{--bg:#e3f2fd;--card:#ffffff;--text:#1a1a1a;--muted:#6b7280;--accent:#22c55e;--accent-2:#3b82f6;--danger:#ef4444;--border:#e5e7eb}
-*{box-sizing:border-box}html,body{height:100%}body{margin:0;background:var(--bg);color:var(--text);font:16px system-ui,Segoe UI,Roboto,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji}
-.container{max-width:1400px;margin:40px auto;padding:0 20px}
-h1{margin:0 0 20px}
-.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;margin:20px 0}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-label{display:flex;flex-direction:column;gap:6px}
-label span{font-size:12px;color:var(--muted)}
-input,select{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:#ffffff;color:var(--text)}
-.actions{display:flex;gap:8px;margin-top:12px}
-button{appearance:none;border:1px solid transparent;background:var(--accent-2);color:#fff;padding:10px 14px;border-radius:8px;cursor:pointer}
-button.secondary{background:transparent;border-color:var(--border);color:var(--text)}
-button.danger{background:var(--danger)}
-button:disabled{opacity:.6;cursor:not-allowed}
-.list-header{display:flex;align-items:center;justify-content:space-between}
-table{width:100%;border-collapse:collapse;table-layout:auto}
-th,td{padding:12px 8px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle}
-th{color:var(--muted);font-weight:600;white-space:nowrap;font-size:14px}
-tbody tr:hover{background:#bbdefb}
-.col-id{min-width:50px;width:auto}
-.col-nome{min-width:120px;width:auto}
-.col-email{min-width:180px;width:auto}
-.col-telefone{min-width:130px;width:auto;white-space:nowrap}
-.col-cpf{min-width:140px;width:auto;white-space:nowrap}
-.col-nascimento{min-width:120px;width:auto;white-space:nowrap}
-.col-cidade{min-width:150px;width:auto;word-break:break-word}
-.col-estado{min-width:70px;width:auto;text-align:center;white-space:nowrap}
-.col-actions{min-width:180px;width:auto;display:flex;gap:8px;white-space:nowrap;justify-content:center;align-items:center;padding:8px}
-.col-actions button{padding:6px 12px;font-size:13px;min-width:70px;flex-shrink:0}
-@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
-@keyframes slideOut{from{transform:translateX(0);opacity:1}to{transform:translateX(100%);opacity:0}}
-@media (max-width:1100px){.grid{grid-template-columns:repeat(2,1fr)}}
-@media (max-width:700px){.grid{grid-template-columns:1fr}}
-@media (max-width:1200px){
-    table{font-size:14px}
-    th,td{padding:8px 6px}
-    .col-actions button{padding:5px 10px;font-size:12px;min-width:60px}
+/* ============================================
+   VARIÁVEIS CSS - Cores e valores reutilizáveis
+   ============================================ */
+:root {
+    /* Cores principais */
+    --bg: #e3f2fd;              /* Cor de fundo da página (azul claro) */
+    --card: #ffffff;             /* Cor de fundo dos cards */
+    --text: #1a1a1a;             /* Cor do texto principal */
+    --muted: #6b7280;            /* Cor do texto secundário/desabilitado */
+    
+    /* Cores de destaque */
+    --accent: #22c55e;           /* Verde para ações positivas */
+    --accent-2: #3b82f6;         /* Azul para botões primários */
+    --danger: #ef4444;            /* Vermelho para ações perigosas */
+    
+    /* Cores de borda e separadores */
+    --border: #e5e7eb;           /* Cor das bordas */
 }
 
+/* ============================================
+   RESET E ESTILOS BASE
+   ============================================ */
+* {
+    box-sizing: border-box;       /* Inclui padding e border no cálculo de largura */
+}
 
+html, body {
+    height: 100%;                 /* Garante que o body ocupe toda a altura */
+}
 
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 16px system-ui, Segoe UI, Roboto, Helvetica, Arial, 
+          Apple Color Emoji, Segoe UI Emoji;  /* Fonte padrão do sistema */
+}
 
+/* ============================================
+   LAYOUT E CONTAINERS
+   ============================================ */
+.container {
+    max-width: 1400px;            /* Largura máxima do conteúdo */
+    margin: 40px auto;            /* Centraliza horizontalmente */
+    padding: 0 20px;              /* Espaçamento lateral em telas pequenas */
+}
+
+h1 {
+    margin: 0 0 20px;             /* Remove margem superior, mantém inferior */
+}
+
+/* ============================================
+   COMPONENTES - CARDS
+   ============================================ */
+.card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;          /* Bordas arredondadas */
+    padding: 24px;
+    margin: 20px 0;
+}
+
+/* ============================================
+   COMPONENTES - FORMULÁRIOS
+   ============================================ */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);  /* 3 colunas iguais */
+    gap: 12px;                     /* Espaçamento entre campos */
+}
+
+label {
+    display: flex;
+    flex-direction: column;        /* Label acima do input */
+    gap: 6px;                      /* Espaço entre label e input */
+}
+
+label span {
+    font-size: 12px;
+    color: var(--muted);           /* Texto secundário para labels */
+}
+
+input, select {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #ffffff;           /* Fundo branco para inputs */
+    color: var(--text);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: var(--accent-2);  /* Borda azul ao focar */
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);  /* Sombra suave ao focar */
+}
+
+input:disabled, select:disabled {
+    background: #f3f4f6;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.actions {
+    display: flex;
+    gap: 8px;                      /* Espaçamento entre botões */
+    margin-top: 12px;
+}
+
+/* ============================================
+   COMPONENTES - BOTÕES
+   ============================================ */
+button {
+    appearance: none;              /* Remove estilos padrão do navegador */
+    border: 1px solid transparent;
+    background: var(--accent-2);   /* Azul padrão */
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;     /* Transição suave em hover */
+}
+
+button:hover {
+    opacity: 0.9;                  /* Efeito de hover */
+    transform: translateY(-1px);    /* Leve elevação */
+}
+
+button.secondary {
+    background: transparent;
+    border-color: var(--border);
+    color: var(--text);
+}
+
+button.danger {
+    background: var(--danger);     /* Vermelho para ações destrutivas */
+}
+
+button.danger:hover {
+    background: #dc2626;           /* Vermelho mais escuro no hover */
+}
+
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;                /* Remove elevação quando desabilitado */
+}
+
+/* ============================================
+   COMPONENTES - CABEÇALHO DA LISTA
+   ============================================ */
+.list-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;  /* Título à esquerda, botão à direita */
+}
+
+/* ============================================
+   COMPONENTES - TABELA
+   ============================================ */
+table {
+    width: 100%;
+    border-collapse: collapse;     /* Remove espaços entre células */
+    table-layout: auto;             /* Largura automática baseada no conteúdo */
+}
+
+th, td {
+    padding: 12px 8px;
+    border-bottom: 1px solid var(--border);
+    text-align: center;             /* Centraliza conteúdo */
+    vertical-align: middle;         /* Alinha verticalmente ao centro */
+}
+
+th {
+    color: var(--muted);
+    font-weight: 600;
+    white-space: nowrap;            /* Impede quebra de linha no cabeçalho */
+    font-size: 14px;
+}
+
+tbody tr {
+    transition: background-color 0.2s ease;  /* Transição suave no hover */
+}
+
+tbody tr:hover {
+    background: #bbdefb;            /* Azul claro ao passar o mouse */
+}
+
+/* ============================================
+   COLUNAS DA TABELA - Larguras mínimas
+   ============================================ */
+.col-id {
+    min-width: 50px;
+    width: auto;
+}
+
+.col-nome {
+    min-width: 120px;
+    width: auto;
+}
+
+.col-email {
+    min-width: 180px;
+    width: auto;
+}
+
+.col-telefone {
+    min-width: 130px;
+    width: auto;
+    white-space: nowrap;            /* Impede quebra de linha no telefone */
+}
+
+.col-cpf {
+    min-width: 140px;
+    width: auto;
+    white-space: nowrap;            /* Impede quebra de linha no CPF */
+}
+
+.col-nascimento {
+    min-width: 120px;
+    width: auto;
+    white-space: nowrap;            /* Impede quebra de linha na data */
+}
+
+.col-cidade {
+    min-width: 150px;
+    width: auto;
+    word-break: break-word;         /* Permite quebra de palavra se necessário */
+}
+
+.col-estado {
+    min-width: 70px;
+    width: auto;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.col-actions {
+    min-width: 180px;
+    width: auto;
+    display: flex;
+    gap: 8px;                       /* Espaçamento entre botões Editar/Excluir */
+    white-space: nowrap;
+    justify-content: center;        /* Centraliza os botões */
+    align-items: center;
+    padding: 8px;
+}
+
+.col-actions button {
+    padding: 6px 12px;
+    font-size: 13px;
+    min-width: 70px;
+    flex-shrink: 0;                 /* Impede que os botões encolham */
+}
+
+/* ============================================
+   COMPONENTES - NOTIFICAÇÕES
+   ============================================ */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    animation: slideIn 0.3s ease;
+    max-width: 400px;
+    font-weight: 500;
+    line-height: 1.5;
+}
+
+.notification-success {
+    background: var(--accent);      /* Verde para sucesso */
+}
+
+.notification-error {
+    background: var(--danger);      /* Vermelho para erro */
+}
+
+/* ============================================
+   ANIMAÇÕES
+   ============================================ */
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);  /* Começa fora da tela à direita */
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);     /* Termina na posição normal */
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);   /* Sai pela direita */
+        opacity: 0;
+    }
+}
+
+/* ============================================
+   RESPONSIVIDADE - TABLETS
+   ============================================ */
+@media (max-width: 1100px) {
+    /* Reduz para 2 colunas no grid de formulário */
+    .grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* ============================================
+   RESPONSIVIDADE - TABLETS PEQUENOS
+   ============================================ */
+@media (max-width: 1200px) {
+    /* Reduz tamanho da fonte e padding da tabela */
+    table {
+        font-size: 14px;
+    }
+    
+    th, td {
+        padding: 8px 6px;
+    }
+    
+    .col-actions button {
+        padding: 5px 10px;
+        font-size: 12px;
+        min-width: 60px;
+    }
+}
+
+/* ============================================
+   RESPONSIVIDADE - MOBILE
+   ============================================ */
+@media (max-width: 700px) {
+    /* Grid de formulário em coluna única */
+    .grid {
+        grid-template-columns: 1fr;
+    }
+    
+    /* Notificações menores em mobile */
+    .notification {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        max-width: none;
+        padding: 0.875rem 1.25rem;
+        font-size: 14px;
+    }
+    
+    /* Container com menos padding em mobile */
+    .container {
+        padding: 0 15px;
+        margin: 20px auto;
+    }
+    
+    /* Card com menos padding em mobile */
+    .card {
+        padding: 16px;
+    }
+}
