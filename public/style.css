@@ -4,7 +4,7 @@
 :root {
     /* Cores principais */
     --bg: #e3f2fd;              /* Cor de fundo da página (azul claro) */
-    --card: #ffffff;             /* Cor de fundo dos cards */
+    --card: #f5f9ff;             /* Cor de fundo dos cards (azul bem claro) */
     --text: #1a1a1a;             /* Cor do texto principal */
     --muted: #6b7280;            /* Cor do texto secundário/desabilitado */
     
